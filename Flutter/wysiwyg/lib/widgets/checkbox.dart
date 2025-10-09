@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-List<String> contentPosition = [ 'left', 'right', 'top', 'bottom' ];
-List<String> checkboxShape = [ 'rounded', 'squared' ];
+List<String> contentPosition = ['left', 'right', 'top', 'bottom'];
+List<String> checkboxShape = ['rounded', 'squared'];
 
 class TCheckbox extends StatefulWidget {
   final bool? value;
@@ -29,9 +29,8 @@ class TCheckbox extends StatefulWidget {
   State<TCheckbox> createState() => _TCheckboxState();
 }
 
-class _TCheckboxState extends State<TCheckbox>  with TickerProviderStateMixin {
-
-        // Animation 
+class _TCheckboxState extends State<TCheckbox> with TickerProviderStateMixin {
+  // Animation
   late AnimationController _controller;
   Animation<double>? _fadeAnim;
   bool _isFadAnimating = false;
@@ -45,15 +44,13 @@ class _TCheckboxState extends State<TCheckbox>  with TickerProviderStateMixin {
   // Linear Gradient
   Gradient? linearGradient;
 
-
-
-    @override
+  @override
   void initState() {
     super.initState();
     _setupAnimations();
   }
 
-    void _setupAnimations() {    
+  void _setupAnimations() {
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -101,7 +98,8 @@ class _TCheckboxState extends State<TCheckbox>  with TickerProviderStateMixin {
                   ),
                 ).animate(CurvedAnimation(
                   parent: _controller,
-                  curve: curves[props["animationCurve"]["value"]] ?? Curves.linear,
+                  curve:
+                      curves[props["animationCurve"]["value"]] ?? Curves.linear,
                 ));
               });
               break;
@@ -141,7 +139,7 @@ class _TCheckboxState extends State<TCheckbox>  with TickerProviderStateMixin {
     _controller.forward();
   }
 
-        Widget _applyAnimations(Widget child) {
+  Widget _applyAnimations(Widget child) {
     Widget animated = child;
 
     if (_fadeAnim != null && _isFadAnimating) {
@@ -160,15 +158,10 @@ class _TCheckboxState extends State<TCheckbox>  with TickerProviderStateMixin {
     return animated;
   }
 
-
   @override
   Widget build(BuildContext context) {
-
-
-
-
     Widget checkboxWidget = _applyAnimations(
-       Visibility(
+      Visibility(
         visible: true,
         child: Checkbox(
           value: widget.value,

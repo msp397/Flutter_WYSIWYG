@@ -188,21 +188,58 @@ class _TAvatarState extends State<TAvatar> with TickerProviderStateMixin  {
    
 
   Color avatarbackgroundcolor = Colors.transparent;
+
     switch (widget.backgroundColor) {
-      case "primary":
-        avatarbackgroundcolor = Theme.of(context).colorScheme.primary;
+      case 'primary':
+        avatarbackgroundcolor = Theme.of(context).colorScheme.primaryContainer;
         break;
-        default:
+      case 'secondary':
+        avatarbackgroundcolor = Theme.of(context).colorScheme.secondary;
+        break;
+      case 'tertiary':
+        avatarbackgroundcolor = Theme.of(context).colorScheme.tertiary;
+        break;
+      case 'transparent':
+        avatarbackgroundcolor = Colors.transparent;
+        break;
+      case 'light':
+        avatarbackgroundcolor = Colors.white;
+        break;
+      case 'dark':
+        avatarbackgroundcolor = Colors.black;
+        break;
+      case 'greyShade':
+        avatarbackgroundcolor = Colors.grey.shade200;
+        break;
+      default:
         avatarbackgroundcolor = Colors.transparent;
         break;
     }
 
      Color avatarforegroundcolor = Colors.black;
-    switch (widget.foregroundColor) { 
+    switch (widget.foregroundColor) {
       case "primary":
         avatarforegroundcolor = Theme.of(context).colorScheme.primary;
         break;
-       default:
+      case "secondary":
+        avatarforegroundcolor = Theme.of(context).colorScheme.secondary;
+        break;
+      case "tertiary":
+        avatarforegroundcolor = Theme.of(context).colorScheme.tertiary;
+        break;
+      case "transparent":
+        avatarforegroundcolor = Colors.transparent;
+        break;
+      case "light":
+        avatarforegroundcolor = Colors.white;
+        break;
+      case "dark":
+        avatarforegroundcolor = Colors.black;
+        break;
+      case "greyShade":
+        avatarforegroundcolor = Colors.grey.shade200;
+        break;
+      default:
         avatarforegroundcolor = Colors.transparent;
         break;
     }

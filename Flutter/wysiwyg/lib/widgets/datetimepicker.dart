@@ -1,57 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class Timeinput extends StatefulWidget {
+class Datetimepicker extends StatefulWidget {
   final String type;
+  final String? label;
   final String? hintText;
   final bool isDisabled;
-  final TextInputType? keyboardType;
-  final TextAlign textAlign;
-  final TextAlignVertical textAlignVertical;
-  final bool showCursor;
+  final String? selectedDateTime;
+  final void Function(String?)? onChanged;
   final String? helperText;
+  final String? datetimeFormat;
+  final String? fillColor;
+  final bool needClear;
   final Widget? prefix;
   final Widget? suffix;
-  final bool needClear;
-  final String? label;
-  final String? fillColor;
   final bool isFloatLabel;
   final MainAxisAlignment? floatingLabelPosition;
   final TextEditingController? controller;
-  final void Function(String)? onChanged;
-  final String? Function(String?)? validator;
   final VoidCallback? callback;
   final double widthFactor;
   final List<Map<String, dynamic>>? animationConfig;
 
-  const Timeinput(
-      {super.key,
-      this.type = '',
-      this.hintText,
-      this.isDisabled = false,
-      this.keyboardType,
-      this.textAlign = TextAlign.center,
-      this.textAlignVertical = TextAlignVertical.center,
-      this.showCursor = true,
-      this.helperText,
-      this.prefix,
-      this.suffix,
-      this.needClear = true,
-      this.label,
-      this.fillColor,
-      this.isFloatLabel = false,
-      this.floatingLabelPosition,
-      this.controller,
-      this.onChanged,
-      this.validator,
-      this.callback,
-      this.widthFactor = 1.0,
-      this.animationConfig = const []});
+  const Datetimepicker({
+    super.key,
+    this.type = 'outlined-circle ',
+    this.label,
+    this.hintText,
+    this.isDisabled = false,
+    this.selectedDateTime,
+    this.onChanged,
+    this.helperText,
+    this.datetimeFormat,
+    this.fillColor,
+    this.needClear = true,
+    this.prefix,
+    this.suffix,
+    this.isFloatLabel = true,
+    this.floatingLabelPosition,
+    this.controller,
+    this.callback,
+    this.widthFactor = 1.0,
+    this.animationConfig = const [],
+  });
 
   @override
-  State<Timeinput> createState() => _TimeinputState();
+  State<Datetimepicker> createState() => _DatetimepickerState();
 }
 
-class _TimeinputState extends State<Timeinput> with TickerProviderStateMixin {
+class _DatetimepickerState extends State<Datetimepicker>
+    with TickerProviderStateMixin {
   // Animation
   late AnimationController _controller;
   Animation<double>? _fadeAnim;
@@ -161,6 +158,19 @@ class _TimeinputState extends State<Timeinput> with TickerProviderStateMixin {
     _controller.forward();
   }
 
+  DateTime? _tryParseDateTime(String value) {
+    try {
+      return DateFormat(widget.datetimeFormat ?? 'yyyy-MM-dd HH:mm')
+          .parseStrict(value);
+    } catch (_) {
+      try {
+        return DateTime.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+  }
+
   Widget _applyAnimations(Widget child) {
     Widget animated = child;
 
@@ -183,6 +193,16 @@ class _TimeinputState extends State<Timeinput> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     BorderRadius borderRadius;
+    Widget isClearable = widget.needClear
+        ? (widget.controller?.text.isNotEmpty ?? false)
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  widget.controller?.clear();
+                },
+              )
+            : const SizedBox()
+        : widget.suffix ?? const SizedBox();
 
     if (widget.type.contains('circle')) {
       borderRadius = BorderRadius.circular(30);
@@ -192,48 +212,6 @@ class _TimeinputState extends State<Timeinput> with TickerProviderStateMixin {
       borderRadius = BorderRadius.circular(8);
     }
 
-    InputDecoration inputDecoration = _buildInputDecoration(borderRadius);
-
-    return _applyAnimations(
-      Visibility(
-        visible: true,
-        child: SizedBox(
-          child: Column(children: [
-            if (widget.isFloatLabel)
-              Row(
-                children: [
-                  if (widget.prefix != null) ...[
-                    widget.prefix ?? const SizedBox(),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(widget.label ?? ''),
-                  if (widget.suffix != null) ...[
-                    const SizedBox(width: 8),
-                    widget.suffix ?? const SizedBox(),
-                  ]
-                ],
-              ),
-            if (widget.isFloatLabel) const SizedBox(height: 8),
-            TextFormField(
-              controller: widget.controller,
-              decoration: inputDecoration,
-              keyboardType: widget.keyboardType,
-              textAlign: widget.textAlign,
-              textAlignVertical: widget.textAlignVertical,
-              showCursor: widget.showCursor,
-              onChanged: (value) {
-                if (widget.onChanged != null) {
-                  widget.onChanged!(value);
-                }
-              },
-            ),
-          ]),
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _buildInputDecoration(BorderRadius borderRadius) {
     Color containerColor;
     switch (widget.fillColor) {
       case "primary":
@@ -262,84 +240,206 @@ class _TimeinputState extends State<Timeinput> with TickerProviderStateMixin {
         break;
     }
 
-    Widget isClearable = widget.needClear
-        ? (widget.controller?.text.isNotEmpty ?? false)
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  widget.controller?.clear();
-                },
-              )
-            : const SizedBox()
-        : widget.suffix ?? const SizedBox();
-
-    // Common decoration elements
-    var decoration = InputDecoration(
-      hintText: widget.hintText,
-      helperText: widget.helperText,
-      prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
-      suffixIcon: isClearable,
-      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      floatingLabelBehavior: !widget.isFloatLabel
-          ? FloatingLabelBehavior.auto
-          : FloatingLabelBehavior.never,
-    );
-
+    InputDecoration inputDecoration;
     switch (widget.type) {
       case 'filled-circle':
-        return decoration.copyWith(
+        inputDecoration = InputDecoration(
           filled: true,
           fillColor: containerColor,
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
             borderRadius: borderRadius,
           ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          labelText: widget.label,
+          hintText: widget.hintText,
+          prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
+          suffixIcon: isClearable,
+          helperText: widget.helperText,
+          floatingLabelBehavior: !widget.isFloatLabel
+              ? FloatingLabelBehavior.auto
+              : FloatingLabelBehavior.never,
         );
+        break;
       case 'outlined-circle':
-        return decoration.copyWith(
+        inputDecoration = InputDecoration(
           filled: false,
           border: OutlineInputBorder(
             borderSide:
                 BorderSide(color: Theme.of(context).primaryColor, width: 2),
             borderRadius: borderRadius,
           ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          labelText: widget.label,
+          hintText: widget.hintText,
+          prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
+          suffixIcon: isClearable,
+          helperText: widget.helperText,
+          floatingLabelBehavior: !widget.isFloatLabel
+              ? FloatingLabelBehavior.auto
+              : FloatingLabelBehavior.never,
         );
+        break;
       case 'filled-square':
-        return decoration.copyWith(
+        inputDecoration = InputDecoration(
           filled: true,
           fillColor: containerColor,
-          border: OutlineInputBorder(
+          border: const OutlineInputBorder(
             borderSide: BorderSide.none,
             borderRadius: BorderRadius.zero,
           ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+          labelText: widget.label,
+          hintText: widget.hintText,
+          prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
+          suffixIcon: isClearable,
+          helperText: widget.helperText,
+          floatingLabelBehavior: !widget.isFloatLabel
+              ? FloatingLabelBehavior.auto
+              : FloatingLabelBehavior.never,
         );
+        break;
       case 'outlined-square':
-        return decoration.copyWith(
+        inputDecoration = InputDecoration(
           filled: false,
           border: OutlineInputBorder(
             borderSide:
                 BorderSide(color: Theme.of(context).primaryColor, width: 2),
             borderRadius: BorderRadius.zero,
           ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          labelText: widget.label,
+          hintText: widget.hintText,
+          prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
+          suffixIcon: isClearable,
+          helperText: widget.helperText,
+          floatingLabelBehavior: !widget.isFloatLabel
+              ? FloatingLabelBehavior.auto
+              : FloatingLabelBehavior.never,
         );
+        break;
       case 'underlined':
-        return decoration.copyWith(
+        inputDecoration = InputDecoration(
           filled: false,
           border: UnderlineInputBorder(
             borderSide:
                 BorderSide(color: Theme.of(context).primaryColor, width: 2),
           ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          labelText: widget.label,
+          hintText: widget.hintText,
+          prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
+          suffixIcon: isClearable,
+          helperText: widget.helperText,
+          floatingLabelBehavior: !widget.isFloatLabel
+              ? FloatingLabelBehavior.auto
+              : FloatingLabelBehavior.never,
         );
-
+        break;
       default:
-        return decoration.copyWith(
+        inputDecoration = InputDecoration(
           filled: false,
           border: OutlineInputBorder(
             borderSide:
                 BorderSide(color: Theme.of(context).primaryColor, width: 2),
             borderRadius: borderRadius,
           ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          labelText: widget.label,
+          hintText: widget.hintText,
+          prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
+          suffixIcon: isClearable,
+          helperText: widget.helperText,
+          floatingLabelBehavior: !widget.isFloatLabel
+              ? FloatingLabelBehavior.auto
+              : FloatingLabelBehavior.never,
         );
     }
+
+    return _applyAnimations(Visibility(
+        visible: true,
+        child: SizedBox(
+          child: Column(
+            children: [
+              if (widget.isFloatLabel)
+                Row(
+                  mainAxisAlignment:
+                      widget.floatingLabelPosition ?? MainAxisAlignment.start,
+                  children: [
+                    if (widget.prefix != null) ...[
+                      widget.prefix ?? const SizedBox(),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(widget.label ?? ''),
+                    if (widget.suffix != null) ...[
+                      const SizedBox(width: 8),
+                      widget.suffix ?? const SizedBox(),
+                    ]
+                  ],
+                ),
+              if (widget.isFloatLabel) const SizedBox(height: 8),
+              TextFormField(
+                controller: widget.controller,
+                decoration: inputDecoration,
+                readOnly: true,
+                onChanged: (value) {
+                  if (widget.onChanged != null) {
+                    widget.onChanged!(value);
+                  }
+                },
+              ),
+            ],
+          ),
+        )));
+  }
+
+  // SHOW DATETIME PICKER
+  Future<void> _selectDateAndTime() async {
+    DateTime initialDate = widget.selectedDateTime != null &&
+            _tryParseDateTime(widget.selectedDateTime!) != null
+        ? _tryParseDateTime(widget.selectedDateTime!)!
+        : DateTime.now();
+
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (selectedDate != null) {
+      TimeOfDay? selectedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(initialDate),
+      );
+
+      if (selectedTime != null) {
+        DateTime combinedDateTime = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          selectedTime.hour,
+          selectedTime.minute,
+        );
+
+        String formatted = _formatDateTime(combinedDateTime);
+
+        setState(() {
+          widget.controller!.text = formatted;
+        });
+
+        widget.onChanged?.call(formatted); // ✅ always return String
+      }
+    }
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    String format = widget.datetimeFormat ?? 'yyyy-MM-dd HH:mm a';
+    return DateFormat(format).format(dateTime);
   }
 }

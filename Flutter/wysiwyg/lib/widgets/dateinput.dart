@@ -1,64 +1,60 @@
 import 'package:flutter/material.dart';
 
-List<String> type = [
- 'filled-circle',
-  'outlined-circle',
-  'filled-square',
-  'outlined-square',
-  'underlined',
-];
-
-List<String> size = ['small', 'medium', 'large', 'max'];
-
-class TDropdown extends StatefulWidget {
+class Dateinput extends StatefulWidget {
   final String type;
+  // final String size;
   final String? hintText;
-  final String? helperText;
   final bool isDisabled;
-  final String? label;
-  final List<String> items;
-  final String? selectedItem;
-  final String? category;
-  final String? fillColor;
-  final bool isFloatLabel;
+  final TextAlign textAlign;
+  final TextAlignVertical textAlignVertical;
+  final bool showCursor;
+  final String? helperText;
   final Widget? prefix;
   final Widget? suffix;
+  final bool needClear;
+  final String? label;
+  final String? fillColor;
+  final bool isFloatLabel;
   final MainAxisAlignment? floatingLabelPosition;
-  final void Function(String?)? onChanged;
+  final TextEditingController? controller;
+  final void Function(String)? onChanged;
+  final String? Function(String?)? validator;
   final VoidCallback? callback;
   final double widthFactor;
   final List<Map<String, dynamic>>? animationConfig;
 
-
-  const TDropdown({
-    super.key,
-    this.type = 'underlined',
-    this.hintText,
-    this.isDisabled = false,
-    this.label,
-    this.items = const ['ko', 'egh', 'ertger'],
-    this.selectedItem,
-    this.helperText,
-    this.category,
-    this.fillColor,
-    this.isFloatLabel = true,
-    this.prefix,
-    this.suffix,
-    this.floatingLabelPosition,
-    this.onChanged,
-    this.callback,
-    this.widthFactor = 1.0,
-    this.animationConfig = const [],
-         
-  });
+  const Dateinput({
+      super.key,
+      this.type = '',
+      this.hintText,
+      this.isDisabled = false,
+      this.textAlign = TextAlign.center,
+      this.textAlignVertical = TextAlignVertical.center,
+      this.showCursor = true,
+      this.helperText,
+      this.prefix,
+      this.suffix,
+      this.needClear = true,
+      this.label,
+      this.fillColor,
+      this.isFloatLabel = false,
+      this.floatingLabelPosition,
+      this.controller,
+      this.onChanged,
+      this.validator,
+      this.callback,
+      this.widthFactor = 1.0,
+      this.animationConfig = const []
+      });
 
   @override
-  State<TDropdown> createState() => _TDropdownState();
+  State<Dateinput> createState() => _DateinputState();
 }
 
-class _TDropdownState extends State<TDropdown> with TickerProviderStateMixin  {
+class _DateinputState extends State<Dateinput> with TickerProviderStateMixin {
 
-   late AnimationController _controller;
+   // Animation 
+  late AnimationController _controller;
   Animation<double>? _fadeAnim;
   bool _isFadAnimating = false;
   Animation<Offset>? _slideAnim;
@@ -71,15 +67,13 @@ class _TDropdownState extends State<TDropdown> with TickerProviderStateMixin  {
   // Linear Gradient
   Gradient? linearGradient;
 
+    @override
+  void initState() {
+    super.initState();
+    _setupAnimations();
+  }
 
- @override
-    void initState() {
-      super.initState();
-      _setupAnimations();
-
-    }
-
-      void _setupAnimations() {    
+  void _setupAnimations() {    
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -167,7 +161,13 @@ class _TDropdownState extends State<TDropdown> with TickerProviderStateMixin  {
     _controller.forward();
   }
 
-    Widget _applyAnimations(Widget child) {
+   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  
+  Widget _applyAnimations(Widget child) {
     Widget animated = child;
 
     if (_fadeAnim != null && _isFadAnimating) {
@@ -186,17 +186,10 @@ class _TDropdownState extends State<TDropdown> with TickerProviderStateMixin  {
     return animated;
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
-    String labelText = widget.label ?? 'Select an option';
-  
-
-    BorderRadius borderRadius;
-
-    if (widget.type.contains('circle')) {
+     BorderRadius borderRadius;
+      if (widget.type.contains('circle')) {
       borderRadius = BorderRadius.circular(30);
     } else if (widget.type.contains('square')) {
       borderRadius = BorderRadius.zero;
@@ -204,8 +197,58 @@ class _TDropdownState extends State<TDropdown> with TickerProviderStateMixin  {
       borderRadius = BorderRadius.circular(8);
     }
 
-     Color containerColor;
-    switch (widget.fillColor) {
+     InputDecoration inputDecoration = _buildInputDecoration(borderRadius);
+
+    return   _applyAnimations( Visibility(
+        visible: true,
+        child: SizedBox(
+          child: Column(
+                  children: [
+                    if (widget.isFloatLabel)
+                    Row(
+                      mainAxisAlignment: widget.floatingLabelPosition ?? MainAxisAlignment.start,
+                      children: [
+                        if (widget.prefix != null) ...[
+                          widget.prefix ?? const SizedBox(),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(widget.label ?? ''),
+                        if(widget.suffix != null)...[
+                          const SizedBox(width: 8),
+                          widget.suffix ?? const SizedBox(),
+                        ]
+                      ],
+                    ),
+                    if (widget.isFloatLabel)
+                          const SizedBox(height: 8),
+                    TextFormField(
+                      controller: widget.controller,
+                      decoration: inputDecoration,
+                      textAlign: widget.textAlign,
+                      textAlignVertical: widget.textAlignVertical,
+                      showCursor: widget.showCursor,
+                     
+                      onChanged: (value) {
+                        if (widget.onChanged != null) {
+                          widget.onChanged!(value);
+                        }
+                      
+                      },
+                      onTap: (){ },
+                    
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      ),
+                    ],
+                  ),
+        ),
+      ),
+    );
+  }
+  
+  InputDecoration _buildInputDecoration(BorderRadius borderRadius) {
+
+    Color containerColor;
+  switch (widget.fillColor) {
       case "primary":
         containerColor = Theme.of(context).colorScheme.primary;
         break;
@@ -223,7 +266,7 @@ class _TDropdownState extends State<TDropdown> with TickerProviderStateMixin  {
         break;
       case "dark":
         containerColor = Colors.black;
-        break;
+        break;  
       case "greyShade":
         containerColor = Colors.grey.shade200;
         break;
@@ -232,121 +275,83 @@ class _TDropdownState extends State<TDropdown> with TickerProviderStateMixin  {
         break;
     }
 
-    InputDecoration inputDecoration;
-    if(widget.type == 'filled-circle') {
-      inputDecoration = InputDecoration(
+        Widget isClearable = widget.needClear
+    ? (widget.controller?.text.isNotEmpty ?? false)
+        ? IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              widget.controller?.clear();
+            },
+          )
+        : const SizedBox()
+    : widget.suffix ?? const SizedBox();
+
+
+     var decoration = InputDecoration(
+    
+      hintText: widget.hintText,
+      helperText: widget.helperText,
+      prefixIcon: !widget.isFloatLabel ? widget.prefix : null,
+      suffixIcon: isClearable,
+      contentPadding: const EdgeInsets.symmetric(vertical: 16,horizontal: 12),
+      floatingLabelBehavior: !widget.isFloatLabel
+      ? FloatingLabelBehavior.auto
+      : FloatingLabelBehavior.never,
+    );
+
+ switch (widget.type) {
+      case 'filled-circle':
+        return decoration.copyWith(
           filled: true,
           fillColor: containerColor,
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
             borderRadius: borderRadius,
           ),
-          contentPadding: EdgeInsets.symmetric(vertical: 16,horizontal: 12),
-          labelText: labelText,
-          hintText: widget.hintText,
-          helperText: widget.helperText,
-           floatingLabelBehavior: !widget.isFloatLabel
-          ? FloatingLabelBehavior.auto
-          : FloatingLabelBehavior.never,
         );
-    } else if (widget.type == 'outlined-circle') {
-       inputDecoration = InputDecoration(
+      case 'outlined-circle':
+        return decoration.copyWith(
           filled: false,
           border: OutlineInputBorder(
             borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
             borderRadius: borderRadius,
           ),
-          contentPadding: EdgeInsets.symmetric(vertical: 16,horizontal: 12),
-          labelText: labelText,
-          hintText: widget.hintText,
-          helperText: widget.helperText,
-           floatingLabelBehavior: !widget.isFloatLabel
-          ? FloatingLabelBehavior.auto
-          : FloatingLabelBehavior.never,
         );
-    }  else if (widget.type == 'filled-square') {
-         inputDecoration = InputDecoration(
+      case 'filled-square':
+        return decoration.copyWith(
           filled: true,
-          fillColor: Colors.grey.shade200,
+          fillColor: containerColor,
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
             borderRadius: BorderRadius.zero,
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
-          labelText: labelText,
-          hintText: widget.hintText,
-          helperText: widget.helperText,
-           floatingLabelBehavior: !widget.isFloatLabel
-          ? FloatingLabelBehavior.auto
-          : FloatingLabelBehavior.never,
         );
-    } else if (widget.type == 'outlined-square') {
-       inputDecoration = InputDecoration(
+      case 'outlined-square':
+        return decoration.copyWith(
           filled: false,
           border: OutlineInputBorder(
             borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
             borderRadius: BorderRadius.zero,
           ),
-          contentPadding: EdgeInsets.symmetric(vertical: 16,horizontal: 12),
-          labelText: labelText,
-          hintText: widget.hintText,
-          helperText: widget.helperText,
-           floatingLabelBehavior: !widget.isFloatLabel
-          ? FloatingLabelBehavior.auto
-          : FloatingLabelBehavior.never,
         );
-    } else if (widget.type == 'underlined') {
-          inputDecoration = InputDecoration(
+      case 'underlined':
+        return decoration.copyWith(
           filled: false,
           border: UnderlineInputBorder(
             borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
           ),
-          contentPadding: EdgeInsets.symmetric(vertical: 16,horizontal: 12),
-          labelText: labelText,
-          hintText: widget.hintText,
-           helperText: widget.helperText,
-            floatingLabelBehavior: !widget.isFloatLabel
-          ? FloatingLabelBehavior.auto
-          : FloatingLabelBehavior.never,
         );
-     } else {
-          inputDecoration = InputDecoration(
+      default:
+        return decoration.copyWith(
           filled: false,
           border: OutlineInputBorder(
             borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
             borderRadius: borderRadius,
           ),
-          contentPadding: EdgeInsets.symmetric(vertical: 16,horizontal: 12),
-          labelText: labelText,
-          hintText: widget.hintText,
-           helperText: widget.helperText,
-            floatingLabelBehavior: !widget.isFloatLabel
-          ? FloatingLabelBehavior.auto
-          : FloatingLabelBehavior.never,
         );
-     }
-   
-    return _applyAnimations(
-       Visibility(
-        visible: true,
-        child: SizedBox(
-          // width: size.width,
-          // height: size.height,
-          child: DropdownButtonFormField<String>(
-            decoration: inputDecoration,
-            value: widget.selectedItem,
-            items: widget.items
-                .map((item) => DropdownMenuItem<String>(
-                      value: item,
-                      child: Text(item),
-                    ))
-                .toList(),
-            onChanged: widget.isDisabled ? null : widget.onChanged,
-          ),
-        ),
-      ),
-    );
+    }
   }
 
-
 }
+
+

@@ -155,8 +155,7 @@ class _TTextFieldState extends State<TTextField> {
     }
 
     InputDecoration inputDecoration;
-    switch (widget.type) {
-      case 'filled-circle':
+    if (widget.type == 'filled-circle') {
         inputDecoration = InputDecoration(
           filled: true,
           fillColor: containerColor, 
@@ -174,9 +173,8 @@ class _TTextFieldState extends State<TTextField> {
               ? FloatingLabelBehavior.auto
               : FloatingLabelBehavior.never,
         );
-        break;
-      case 'outlined-circle':
-        inputDecoration = InputDecoration(
+    } else if (widget.type == 'outlined-circle'){
+          inputDecoration = InputDecoration(
           filled: false,
           border: OutlineInputBorder(
             borderSide:
@@ -193,9 +191,8 @@ class _TTextFieldState extends State<TTextField> {
               ? FloatingLabelBehavior.auto
               : FloatingLabelBehavior.never,
         );
-        break;
-      case 'filled-square':
-        inputDecoration = InputDecoration(
+    } else if (widget.type == 'filled-square') {
+          inputDecoration = InputDecoration(
           filled: true,
           fillColor: containerColor,
           border: OutlineInputBorder(
@@ -212,9 +209,8 @@ class _TTextFieldState extends State<TTextField> {
               ? FloatingLabelBehavior.auto
               : FloatingLabelBehavior.never,
         );
-        break;
-      case 'outlined-square':
-        inputDecoration = InputDecoration(
+    } else if (widget.type == 'outlined-square') {
+          inputDecoration = InputDecoration(
           filled: false,
           border: OutlineInputBorder(
             borderSide:
@@ -231,9 +227,8 @@ class _TTextFieldState extends State<TTextField> {
               ? FloatingLabelBehavior.auto
               : FloatingLabelBehavior.never,
         );
-        break;
-      case 'underlined':
-        inputDecoration = InputDecoration(
+    } else if (widget.type == 'underlined') {
+       inputDecoration = InputDecoration(
           filled: false,
           border: UnderlineInputBorder(
             borderSide:
@@ -249,8 +244,7 @@ class _TTextFieldState extends State<TTextField> {
               ? FloatingLabelBehavior.auto
               : FloatingLabelBehavior.never,
         );
-        break;
-      default:
+    }  else {
         inputDecoration = InputDecoration(
           filled: false,
           border: OutlineInputBorder(
@@ -340,21 +334,6 @@ class _TTextFieldState extends State<TTextField> {
                       validator: widget.validator,
                       onTap: _onTap),
             ),
-            // SizedBox(
-            //   width: size.width,
-            //   child: TextFormField(
-            //       controller: widget.controller,
-            //       decoration: inputDecoration,
-            //       keyboardType: widget.keyboardType,
-            //       textAlign: widget.textAlign,
-            //       textAlignVertical: widget.textAlignVertical,
-            //       showCursor: widget.showCursor,
-            //       obscureText: _isObscured,
-            //       enabled: !widget.isDisabled,
-            //       onChanged: widget.onChanged,
-            //       validator: widget.validator,
-            //       onTap: _onTap),
-            // ),
           ],
         ),
       ),

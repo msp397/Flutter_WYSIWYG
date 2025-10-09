@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 class TorusButton extends StatefulWidget {
   final String? text;
   final String? varient;
+  
   const TorusButton({
     super.key,
-    this.text, this.varient,
+    this.text, 
+    this.varient,
   });
 
   @override
